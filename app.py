@@ -1,1 +1,1 @@
-print("Docker funcionando no WSL")
+print("Docker funcionando no WSL!")
