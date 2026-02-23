@@ -155,7 +155,7 @@ def download_and_upload(date: str, client=None) -> bool:
         return False
 
 
-def ingest_next_months(n: int = 3) -> list:
+def ingest_next_months(n: int = 6) -> list:
     """
     Processes the next N missing months:
     - Checks months already in GCS
