@@ -34,11 +34,11 @@ def get_gsc_client(CREDENTIALS_PATH):
         CREDENTIALS_PATH,
         scopes=['https://www.googleapis.com/auth/cloud-platform']
     )
-    print("Conection OK!")
+    print("Connection OK!")
     return storage.Client(credentials=credentials, project=credentials.project_id)
 
 
-def upload_file_to_gcs(client, GCS_BUCKET_NAME, GCS_PREFIX, output_path):
+def upload_file_to_gcs(client,GCS_BUCKET_NAME, GCS_PREFIX, output_path):
     """
     Uploads a file to Google Cloud Storage.
     """
