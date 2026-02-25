@@ -3,7 +3,6 @@ import requests
 from google.cloud import storage
 from google.oauth2 import service_account
 from pathlib import Path
-from google.oauth2 import service_account
 
 # Configuration
 CREDENTIALS_PATH = Path("/mnt/c/Users/leona/OneDrive/Documents/Projeto Test/credentials/sa-ingestion-key.json")

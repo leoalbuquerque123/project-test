@@ -1,0 +1,67 @@
+# =============================================================================
+# Docker Compose: Spark + Iceberg + GCS
+# =============================================================================
+#
+# Image: apache/spark:3.5.3 (official Apache image)
+# Python in container: 3.8 (use Optional[str] instead of str | None)
+#
+# GCS Connector: gcs-connector-hadoop3-2.2.22-shaded.jar
+#   Downloaded on startup. Shaded version avoids protobuf conflicts.
+#
+# Service Account: sa-processing (mounted read-only)
+#   - objectViewer on LANDING bucket (read raw files)
+#   - objectAdmin on WAREHOUSE bucket (read/write Iceberg)
+#
+# Spark UI:
+#   - 4040: Job UI (active during job execution)
+#   - 18080: History Server (view completed jobs)
+#
+# =============================================================================
+
+version: '3.8'
+
+services:
+  spark-iceberg:
+    image: my-spark:latest
+    container_name: spark-iceberg
+    user: root
+
+    environment:
+      - SPARK_HOME=/opt/spark
+
+      # GCP authentication (processing service account)
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/spark/work-dir/credentials/sa-processing-key.json
+
+      # Pipeline paths
+      - WAREHOUSE_PATH=gs://prime-artwork-486202-u2-iceberg-warehouse/warehouse
+      - GCP_PROJECT_ID=prime-artwork-486202-u2
+
+      # Spark UI: bind to 0.0.0.0 to allow access from outside the container
+      - SPARK_DRIVER_OPTS=-Dspark.ui.host=0.0.0.0
+
+      # History Server: log directory
+      - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/opt/spark/work-dir/spark-events
+
+    ports:
+      - "4040:4040"    # Spark Job UI (during execution)
+      - "18080:18080"  # Spark History Server (completed jobs)
+
+    volumes:
+      - ./src:/opt/spark/work-dir/src
+      - ./data:/opt/spark/work-dir/data
+      - ./tests:/opt/spark/work-dir/tests
+      - ./credentials:/opt/spark/work-dir/credentials:ro
+
+    working_dir: /opt/spark/work-dir
+
+    command: >
+      bash -c "
+        pip install requests pytest sparkmeasure &&
+        curl -sL -o /opt/spark/jars/gcs-connector-shaded.jar
+          https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.22/gcs-connector-hadoop3-2.2.22-shaded.jar &&
+        echo 'GCS connector JAR installed' &&
+        mkdir -p /opt/spark/work-dir/spark-events &&
+        /opt/spark/sbin/start-history-server.sh &&
+        echo 'History Server started on port 18080' &&
+        tail -f /dev/null
+      "

@@ -1,0 +1,5 @@
+google-cloud-storage
+requests
+pytest
+pytest-mock
+pandas pyarrow
