@@ -1,8 +1,19 @@
+#Bronze Trips table creation
 CREATE OR REPLACE EXTERNAL TABLE nyc-taxi-mini.bronze.trips
 WITH CONNECTION `nyc-taxi-mini.us.nyc-taxi-mini`
 OPTIONS (
   format = 'ICEBERG',
   uris = ['gs://nyc-taxi-mini-iceberg-warehouse/bronze/trips/metadata/v1.metadata.json']
+);
+
+
+
+#Bronze Zone table creation
+CREATE OR REPLACE EXTERNAL TABLE nyc-taxi-mini.bronze.zone
+WITH CONNECTION `nyc-taxi-mini.us.nyc-taxi-mini`
+OPTIONS (
+  format = 'ICEBERG',
+  uris = ['gs://nyc-taxi-mini-iceberg-warehouse/bronze/zone/metadata/v1.metadata.json']
 );
 
 

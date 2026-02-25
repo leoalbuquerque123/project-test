@@ -1,5 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 from pyspark.sql.types import (
     DoubleType,
     StructField,
@@ -11,7 +13,7 @@ from pyspark.sql.types import (
 )
 
 def spark():
-    session = SparkSession.builder.appName("Bronze Trip Ingestion").getOrCreate()
+    session = SparkSession.builder.appName("Silver Trip Ingestion").getOrCreate()
     
     return session
 
@@ -46,11 +48,13 @@ def schema_trips():
 spark = spark()
 df = spark.read.schema(schema_trips()).parquet("gs://nyc-taxi-mini-landing/yellow_taxi/*/*.parquet")
 
-df = df.withColumn("file_path", F.regexp_extract(F.input_file_name(), r"/([^/]+)/[^/]+$", 1))
-df = df.withColumn("year", F.substring("file_path", 1, 4))
-df = df.withColumn("month", F.substring("file_path", 6, 2))
-df = df.withColumn("ingestion_date", F.current_timestamp())
-df = df.drop("file_path")
+# Pega todas as colunas exceto ingestion_date
+cols_to_hash = [c for c in df.columns if c != "ingestion_date"]
+
+df = df.withColumn(
+    "row_hash",
+    F.sha2(F.concat_ws("||", *[F.col(c).cast("string") for c in cols_to_hash]), 256)
+)
 
 df.writeTo("bronze.trips") \
     .partitionedBy("year", "month") \
