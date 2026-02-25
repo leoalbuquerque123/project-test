@@ -46,9 +46,9 @@ def schema_trips():
 
 
 spark = spark()
-df = spark.read.schema(schema_trips()).parquet("gs://nyc-taxi-mini-landing/yellow_taxi/*/*.parquet")
+df = spark.read.format("iceberg").load("gs://nyc-taxi-mini-iceberg-warehouse/bronze/trips")
 
-# Pega todas as colunas exceto ingestion_date
+# Get all the columns except ingestion_date
 cols_to_hash = [c for c in df.columns if c != "ingestion_date"]
 
 df = df.withColumn(
@@ -56,7 +56,9 @@ df = df.withColumn(
     F.sha2(F.concat_ws("||", *[F.col(c).cast("string") for c in cols_to_hash]), 256)
 )
 
-df.writeTo("bronze.trips") \
+# df = df.repartition(32)
+
+df.writeTo("silver.trips") \
     .partitionedBy("year", "month") \
-    .tableProperty("location", "gs://nyc-taxi-mini-iceberg-warehouse/bronze/trips") \
-    .createOrReplace()
+    .tableProperty("location", "gs://nyc-taxi-mini-iceberg-warehouse/silver/trips") \
+    .append()

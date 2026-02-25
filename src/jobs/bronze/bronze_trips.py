@@ -56,3 +56,4 @@ df.writeTo("bronze.trips") \
     .partitionedBy("year", "month") \
     .tableProperty("location", "gs://nyc-taxi-mini-iceberg-warehouse/bronze/trips") \
     .createOrReplace()
+# .append() \
