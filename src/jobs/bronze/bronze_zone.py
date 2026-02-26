@@ -4,7 +4,8 @@ from pyspark.sql.types import (
     StructField,
     StructType,
     IntegerType,
-    StringType
+    StringType,
+    TimestampType
 )
 
 def spark():
@@ -31,4 +32,4 @@ df = df.withColumn("ingestion_date", F.current_timestamp())
 
 df.writeTo("bronze.zone") \
     .tableProperty("location", "gs://nyc-taxi-mini-iceberg-warehouse/bronze/zone") \
-    .createOrReplace()
+    .overwritePartitions()

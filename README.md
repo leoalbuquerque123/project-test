@@ -16,6 +16,22 @@ OPTIONS (
   uris = ['gs://nyc-taxi-mini-iceberg-warehouse/bronze/zone/metadata/v1.metadata.json']
 );
 
+#Silver Trips table creation
+CREATE OR REPLACE EXTERNAL TABLE nyc-taxi-mini.silver.trips
+WITH CONNECTION `nyc-taxi-mini.us.nyc-taxi-mini`
+OPTIONS (
+  format = 'ICEBERG',
+  uris = ['gs://nyc-taxi-mini-iceberg-warehouse/silver/trips/metadata/v1.metadata.json']
+);
+
+#Silver Zone table creation
+CREATE OR REPLACE EXTERNAL TABLE nyc-taxi-mini.silver.zone
+WITH CONNECTION `nyc-taxi-mini.us.nyc-taxi-mini`
+OPTIONS (
+  format = 'ICEBERG',
+  uris = ['gs://nyc-taxi-mini-iceberg-warehouse/silver/zone/metadata/v1.metadata.json']
+);
+
 
 #Spark Submit for Bronze Trip
 docker exec -it spark-iceberg /opt/spark/bin/spark-submit \
